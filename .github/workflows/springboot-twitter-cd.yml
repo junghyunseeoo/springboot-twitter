@@ -7,7 +7,6 @@ on:
 jobs:
   springboot-twitter-cd:
     runs-on: ubuntu-24.04
-
     steps:
       - uses: actions/checkout@v4
 
@@ -45,10 +44,9 @@ jobs:
   deploy:
     needs: springboot-twitter-cd
     runs-on: ubuntu-24.04
-    permissions:
+    permissions: # OIDC 권한 설정 (매우 중요)
       id-token: write
       contents: read
-
     steps:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
@@ -66,12 +64,7 @@ jobs:
               "docker stop springboot-twitter || true",
               "docker rm springboot-twitter || true",
               "docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/springboot-twitter-linux:latest",
-              "docker run -d \
-                --name springboot-twitter \
-                -p 8080:8080 \
-                -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT}}:3306/twitterdb \
-                -e SPRING_DATASOURCE_USERNAME=${{ secrets.RDS_USERNAME }} \
-                -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \
-                ${{ secrets.DOCKER_HUB_USERNAME }}/springboot-twitter-linux:latest"]' \
+              "docker run -d --name springboot-twitter -p 8080:8080 -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}:3306/twitterdb -e SPRING_DATASOURCE_USERNAME=${{ secrets.RDS_USERNAME }} -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} ${{ secrets.DOCKER_HUB_USERNAME }}/springboot-twitter-linux:latest"
+            ]' \
             --region "${{ secrets.AWS_REGION }}" \
             --output text
